@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Users — Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div id="topbar-container" data-title="User Management"></div>
+
+<div class="main-wrap"><div class="page-content">
+
+  <div class="page-header">
+    <div><h4>Users</h4><p>Manage all registered users, view stats and control access</p></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-ghost"><i class="bi bi-download me-1"></i>Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem;mb:4px">Total Users</div><div style="font-size:1.4rem;font-weight:800;color:var(--primary);font-family:var(--font-alt)">25,840</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem">Active Today</div><div style="font-size:1.4rem;font-weight:800;color:var(--success);font-family:var(--font-alt)">1,247</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem">Premium Users</div><div style="font-size:1.4rem;font-weight:800;color:var(--gold);font-family:var(--font-alt)">3,420</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem">Banned</div><div style="font-size:1.4rem;font-weight:800;color:var(--danger);font-family:var(--font-alt)" id="banned-count">0</div></div></div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div class="card-header-custom flex-wrap gap-3">
+      <h6>All Users</h6>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="search-bar"><i class="bi bi-search"></i><input type="text" class="form-control" id="user-search" placeholder="Search by name or email..." style="width:220px;padding-left:32px!important;font-size:.82rem"></div>
+        <select class="form-select" id="plan-filter" style="width:auto;padding:7px 12px;font-size:.82rem">
+          <option value="">All Plans</option>
+          <option>Free</option><option>Starter</option><option>Pro</option>
+        </select>
+        <select class="form-select" id="status-filter" style="width:auto;padding:7px 12px;font-size:.82rem">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="banned">Banned</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table-custom">
+        <thead><tr><th>User</th><th>Mobile</th><th>Plan</th><th>Wallet</th><th>Tests</th><th>Best WPM</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="color:var(--text-muted);font-size:.82rem" id="showing-text">Showing all users</span>
+      <div style="display:flex;gap:6px" id="pagination"></div>
+    </div>
+  </div>
+
+</div></div>
+
+<!-- USER DETAIL MODAL -->
+<div class="modal-custom" id="userModal">
+  <div class="modal-box">
+    <div class="modal-header"><h5>User Details</h5><button class="modal-close" onclick="closeModal('userModal')"><i class="bi bi-x"></i></button></div>
+    <div class="modal-body" id="user-modal-body"></div>
+    <div class="modal-footer" id="user-modal-footer"></div>
+  </div>
+</div>
+
+<!-- WALLET ADJUST MODAL -->
+<div class="modal-custom" id="walletModal">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-header"><h5>Adjust Wallet</h5><button class="modal-close" onclick="closeModal('walletModal')"><i class="bi bi-x"></i></button></div>
+    <div class="modal-body">
+      <div id="wallet-user-info" style="margin-bottom:16px;padding:12px;background:var(--bg-card2);border-radius:8px"></div>
+      <div class="form-group">
+        <label class="form-label">Action</label>
+        <select class="form-select" id="w-action"><option value="credit">Add Credit</option><option value="debit">Deduct</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₹)</label>
+        <input type="number" class="form-control" id="w-amount" placeholder="Enter amount" min="1">
+      </div>
+      <div class="form-group mb-0">
+        <label class="form-label">Reason</label>
+        <input type="text" class="form-control" id="w-reason" placeholder="e.g. Bonus, Correction, Penalty">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('walletModal')">Cancel</button>
+      <button class="btn-primary-custom" onclick="applyWallet()"><i class="bi bi-check-lg"></i>Apply</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/admin.js"></script>
+<script>
+if(!localStorage.getItem('te_admin')) window.location.href='admin-login.html';
+
+let users = [...USERS_DATA];
+let currentWalletUser = null;
+
+document.getElementById('banned-count').textContent = users.filter(u=>u.status==='banned').length;
+
+function renderUsers() {
+  const q = document.getElementById('user-search').value.toLowerCase();
+  const pf = document.getElementById('plan-filter').value;
+  const sf = document.getElementById('status-filter').value;
+  const filtered = users.filter(u =>
+    (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)) &&
+    (!pf || u.plan === pf) && (!sf || u.status === sf)
+  );
+  document.getElementById('showing-text').textContent = `Showing ${filtered.length} of ${users.length} users`;
+  const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = filtered.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="avatar" style="background:${avatarColor(u.name)};color:var(--bg-dark)">${initials(u.name)}</div>
+          <div>
+            <div style="font-weight:600;font-size:.875rem">${u.name}</div>
+            <div style="font-size:.72rem;color:var(--text-muted)">${u.email}</div>
+          </div>
+        </div>
+      </td>
+      <td style="color:var(--text-muted);font-size:.82rem">${u.mobile}</td>
+      <td><span style="background:${u.plan==='Pro'?'rgba(124,58,237,.12)':u.plan==='Starter'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${u.plan==='Pro'?'#a78bfa':u.plan==='Starter'?'var(--info)':'var(--text-muted)'};border-radius:6px;padding:2px 9px;font-size:.72rem;font-weight:600">${u.plan}</span></td>
+      <td style="color:var(--primary);font-weight:600;font-family:var(--font-alt)">₹${u.wallet.toFixed(0)}</td>
+      <td style="color:var(--text-muted)">${u.tests}</td>
+      <td style="color:var(--info);font-weight:600;font-family:var(--font-alt)">${u.bestWpm}</td>
+      <td style="color:var(--text-muted);font-size:.8rem">${formatDate(u.joined)}</td>
+      <td><span class="${u.status==='active'?'badge-active':'badge-banned'}">${u.status}</span></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn-sm-icon view" onclick="viewUser('${u.id}')" title="View"><i class="bi bi-eye"></i></button>
+          <button class="btn-sm-icon" style="color:var(--gold)" onclick="adjustWallet('${u.id}')" title="Wallet"><i class="bi bi-wallet2"></i></button>
+          <button class="btn-sm-icon ${u.status==='active'?'delete':''}" onclick="toggleBan('${u.id}')" title="${u.status==='active'?'Ban':'Unban'}">
+            <i class="bi bi-${u.status==='active'?'slash-circle':'check-circle'}" style="color:${u.status==='active'?'var(--danger)':'var(--success)'}"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function viewUser(id) {
+  const u = users.find(x=>x.id===id);
+  document.getElementById('user-modal-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:var(--bg-card2);border-radius:10px">
+      <div class="avatar" style="width:52px;height:52px;font-size:1rem;background:${avatarColor(u.name)};color:var(--bg-dark)">${initials(u.name)}</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem">${u.name}</div>
+        <div style="color:var(--text-muted);font-size:.82rem">${u.email} · ${u.mobile}</div>
+        <div style="margin-top:4px"><span class="${u.status==='active'?'badge-active':'badge-banned'}">${u.status}</span></div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-4"><div style="text-align:center;background:var(--bg-dark);border-radius:8px;padding:12px"><div style="font-size:1.3rem;font-weight:800;color:var(--primary);font-family:var(--font-alt)">₹${u.wallet.toFixed(0)}</div><div style="font-size:.72rem;color:var(--text-muted)">Wallet</div></div></div>
+      <div class="col-4"><div style="text-align:center;background:var(--bg-dark);border-radius:8px;padding:12px"><div style="font-size:1.3rem;font-weight:800;color:var(--info);font-family:var(--font-alt)">${u.tests}</div><div style="font-size:.72rem;color:var(--text-muted)">Tests</div></div></div>
+      <div class="col-4"><div style="text-align:center;background:var(--bg-dark);border-radius:8px;padding:12px"><div style="font-size:1.3rem;font-weight:800;color:var(--gold);font-family:var(--font-alt)">${u.bestWpm}</div><div style="font-size:.72rem;color:var(--text-muted)">Best WPM</div></div></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-muted);font-size:.85rem">Plan</span><span style="font-weight:600;font-size:.85rem">${u.plan}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-muted);font-size:.85rem">Joined</span><span style="font-size:.85rem">${formatDate(u.joined)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:var(--text-muted);font-size:.85rem">User ID</span><span style="font-size:.82rem;font-family:monospace;color:var(--text-dim)">${u.id}</span></div>
+    </div>`;
+  document.getElementById('user-modal-footer').innerHTML = `
+    <button class="btn-ghost" onclick="closeModal('userModal')">Close</button>
+    <button class="btn-danger-custom" onclick="closeModal('userModal');toggleBan('${u.id}')">${u.status==='active'?'Ban User':'Unban User'}</button>`;
+  openModal('userModal');
+}
+
+function toggleBan(id) {
+  const u = users.find(x=>x.id===id);
+  u.status = u.status==='active' ? 'banned' : 'active';
+  document.getElementById('banned-count').textContent = users.filter(x=>x.status==='banned').length;
+  toast(u.name + (u.status==='banned'?' has been banned':" has been unbanned"), u.status==='banned'?'danger':'success');
+  renderUsers();
+}
+
+function adjustWallet(id) {
+  currentWalletUser = users.find(x=>x.id===id);
+  document.getElementById('wallet-user-info').innerHTML = `<div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:${avatarColor(currentWalletUser.name)};color:var(--bg-dark)">${initials(currentWalletUser.name)}</div><div><div style="font-weight:600">${currentWalletUser.name}</div><div style="color:var(--primary);font-size:.85rem">Balance: ₹${currentWalletUser.wallet.toFixed(2)}</div></div></div>`;
+  document.getElementById('w-amount').value = '';
+  document.getElementById('w-reason').value = '';
+  openModal('walletModal');
+}
+
+function applyWallet() {
+  const amt = parseFloat(document.getElementById('w-amount').value);
+  const action = document.getElementById('w-action').value;
+  const reason = document.getElementById('w-reason').value;
+  if(!amt || amt<=0){toast('Enter a valid amount','danger');return;}
+  if(action==='debit' && amt > currentWalletUser.wallet){toast('Amount exceeds balance','danger');return;}
+  currentWalletUser.wallet = action==='credit' ? currentWalletUser.wallet+amt : currentWalletUser.wallet-amt;
+  closeModal('walletModal');
+  renderUsers();
+  toast(`₹${amt} ${action==='credit'?'added to':'deducted from'} ${currentWalletUser.name}'s wallet`);
+}
+
+['user-search','plan-filter','status-filter'].forEach(id => document.getElementById(id).addEventListener(id==='user-search'?'input':'change', renderUsers));
+renderUsers();
+</script>
+</body>
+</html>

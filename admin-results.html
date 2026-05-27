@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Results — Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div id="topbar-container" data-title="Contest Results"></div>
+
+<div class="main-wrap"><div class="page-content">
+
+  <div class="page-header">
+    <div><h4>Results</h4><p>View all contest results and manage disqualifications</p></div>
+    <button class="btn-ghost"><i class="bi bi-download me-1"></i>Export Results</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <div class="search-bar" style="flex:1;min-width:200px"><i class="bi bi-search"></i><input type="text" class="form-control" id="r-search" placeholder="Search player or contest..." style="padding-left:32px!important;font-size:.82rem"></div>
+      <select class="form-select" id="r-contest-filter" style="width:auto;padding:7px 12px;font-size:.82rem">
+        <option value="">All Contests</option>
+        <option value="5">Beginner Cup</option>
+        <option value="6">Weekend Championship</option>
+      </select>
+      <select class="form-select" id="r-rank-filter" style="width:auto;padding:7px 12px;font-size:.82rem">
+        <option value="">All Ranks</option>
+        <option value="1">1st Place</option>
+        <option value="2">2nd Place</option>
+        <option value="3">3rd Place</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-custom"><h6>All Results</h6><span style="color:var(--text-muted);font-size:.8rem" id="results-count"></span></div>
+    <div class="table-responsive">
+      <table class="table-custom">
+        <thead><tr><th>Player</th><th>Contest</th><th>Rank</th><th>WPM</th><th>Accuracy</th><th>Correct</th><th>Wrong</th><th>Prize Won</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody id="results-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div></div>
+
+<script src="js/admin.js"></script>
+<script>
+if(!localStorage.getItem('te_admin')) window.location.href='admin-login.html';
+let results = [...RESULTS_DATA];
+const rankIcons = {1:'🥇',2:'🥈',3:'🥉'};
+
+function renderResults() {
+  const q = document.getElementById('r-search').value.toLowerCase();
+  const cf = document.getElementById('r-contest-filter').value;
+  const rf = document.getElementById('r-rank-filter').value;
+  const filtered = results.filter(r =>
+    (!q || r.userName.toLowerCase().includes(q) || r.contestName.toLowerCase().includes(q)) &&
+    (!cf || r.contestId===parseInt(cf)) &&
+    (!rf || r.rank===parseInt(rf))
+  );
+  document.getElementById('results-count').textContent = filtered.length + ' records';
+  document.getElementById('results-tbody').innerHTML = filtered.map(r=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar" style="background:${avatarColor(r.userName)};color:var(--bg-dark)">${initials(r.userName)}</div><span style="font-weight:500">${r.userName}</span></div></td>
+      <td style="color:var(--text-muted);font-size:.82rem">${r.contestName}</td>
+      <td><span style="font-size:1.1rem">${rankIcons[r.rank]||r.rank}</span></td>
+      <td style="color:var(--primary);font-weight:700;font-family:var(--font-alt)">${r.wpm}</td>
+      <td style="color:var(--text-muted)">${r.accuracy}%</td>
+      <td style="color:var(--success)">${r.correct}</td>
+      <td style="color:var(--danger)">${r.wrong}</td>
+      <td style="color:var(--gold);font-weight:700;font-family:var(--font-alt)">${r.prize>0?'₹'+r.prize:'—'}</td>
+      <td style="color:var(--text-muted);font-size:.8rem">${formatDate(r.date)}</td>
+      <td><button class="btn-danger-custom py-1 px-2" style="font-size:.72rem" onclick="disqualify('${r.id}')"><i class="bi bi-slash-circle"></i> DQ</button></td>
+    </tr>`).join('');
+}
+
+function disqualify(id) {
+  if(!confirm('Disqualify this result? Prize will be reversed.')) return;
+  results = results.filter(r=>r.id!==id);
+  renderResults();
+  toast('Result disqualified and removed','danger');
+}
+
+['r-search'].forEach(id=>document.getElementById(id).addEventListener('input',renderResults));
+['r-contest-filter','r-rank-filter'].forEach(id=>document.getElementById(id).addEventListener('change',renderResults));
+renderResults();
+</script>
+</body>
+</html>

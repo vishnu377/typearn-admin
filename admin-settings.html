@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settings — Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div id="topbar-container" data-title="Settings"></div>
+
+<div class="main-wrap"><div class="page-content">
+
+  <div class="page-header">
+    <div><h4>Settings</h4><p>Configure platform settings, payment gateway and notifications</p></div>
+    <button class="btn-primary-custom" onclick="saveAll()"><i class="bi bi-check-lg"></i>Save All Changes</button>
+  </div>
+
+  <div class="row g-4">
+    <!-- LEFT COLUMN -->
+    <div class="col-lg-8">
+
+      <!-- Platform Settings -->
+      <div class="card mb-4">
+        <div class="card-header-custom"><h6><i class="bi bi-gear me-2" style="color:var(--primary)"></i>Platform Settings</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6"><div class="form-group"><label class="form-label">Platform Name</label><input type="text" class="form-control" value="Type&Earn"></div></div>
+            <div class="col-md-6"><div class="form-group"><label class="form-label">Support Email</label><input type="email" class="form-control" value="support@typeandmatch.com"></div></div>
+            <div class="col-md-6"><div class="form-group"><label class="form-label">Min Entry Fee (₹)</label><input type="number" class="form-control" value="5" min="1"></div></div>
+            <div class="col-md-6"><div class="form-group"><label class="form-label">Max Prize Pool (₹)</label><input type="number" class="form-control" value="50000"></div></div>
+            <div class="col-md-6"><div class="form-group"><label class="form-label">Min Withdrawal (₹)</label><input type="number" class="form-control" value="50"></div></div>
+            <div class="col-md-6"><div class="form-group"><label class="form-label">Welcome Bonus (₹)</label><input type="number" class="form-control" value="50"></div></div>
+            <div class="col-12">
+              <div class="form-group mb-0">
+                <label class="form-label">Platform Description</label>
+                <textarea class="form-control" rows="2">The ultimate typing contest platform where speed meets accuracy and skills earn you real rewards.</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Razorpay Settings -->
+      <div class="card mb-4">
+        <div class="card-header-custom">
+          <h6><i class="bi bi-credit-card me-2" style="color:var(--info)"></i>Razorpay Integration</h6>
+          <span class="badge-upcoming">Test Mode</span>
+        </div>
+        <div class="card-body">
+          <div class="alert-custom alert-info mb-3" style="font-size:.82rem">
+            <i class="bi bi-info-circle"></i>
+            Add your Razorpay API keys below to enable real payments. Currently running in test/mock mode.
+          </div>
+          <div class="row g-3">
+            <div class="col-12"><div class="form-group"><label class="form-label">Razorpay Key ID</label><input type="text" class="form-control" placeholder="rzp_test_XXXXXXXXXX" value="rzp_test_demo"></div></div>
+            <div class="col-12">
+              <div class="form-group mb-0">
+                <label class="form-label">Razorpay Key Secret</label>
+                <div style="position:relative">
+                  <input type="password" class="form-control" id="rzp-secret" placeholder="Enter secret key" value="demo_secret_key">
+                  <i class="bi bi-eye" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-dim)" onclick="const i=document.getElementById('rzp-secret');i.type=i.type==='password'?'text':'password'"></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div style="display:flex;align-items:center;gap:12px">
+                <label class="toggle"><input type="checkbox" id="rzp-live"><span class="toggle-slider"></span></label>
+                <span style="color:var(--text-muted);font-size:.875rem">Enable Live Mode (use production keys only)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contest Defaults -->
+      <div class="card mb-4">
+        <div class="card-header-custom"><h6><i class="bi bi-trophy me-2" style="color:var(--gold)"></i>Contest Defaults</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4"><div class="form-group"><label class="form-label">Default Duration</label><select class="form-select"><option>5 min</option><option selected>10 min</option><option>15 min</option></select></div></div>
+            <div class="col-md-4"><div class="form-group"><label class="form-label">Default Max Players</label><input type="number" class="form-control" value="50"></div></div>
+            <div class="col-md-4"><div class="form-group"><label class="form-label">Prize Split</label><select class="form-select"><option selected>50/30/20</option><option>60/30/10</option><option>70/20/10</option></select></div></div>
+            <div class="col-12">
+              <div style="display:flex;align-items:center;gap:12px">
+                <label class="toggle"><input type="checkbox" id="auto-launch" checked><span class="toggle-slider"></span></label>
+                <span style="color:var(--text-muted);font-size:.875rem">Auto-launch contests when full</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-lg-4">
+
+      <!-- Feature Toggles -->
+      <div class="card mb-4">
+        <div class="card-header-custom"><h6><i class="bi bi-toggles me-2" style="color:var(--primary)"></i>Feature Toggles</h6></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:.875rem;font-weight:500">New Registrations</div><div style="font-size:.75rem;color:var(--text-muted)">Allow new users to register</div></div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:.875rem;font-weight:500">Live Contests</div><div style="font-size:.75rem;color:var(--text-muted)">Enable contest joining</div></div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:.875rem;font-weight:500">Wallet Withdrawals</div><div style="font-size:.75rem;color:var(--text-muted)">Allow payout requests</div></div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:.875rem;font-weight:500">Exam Practice</div><div style="font-size:.75rem;color:var(--text-muted)">Show exam section</div></div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:.875rem;font-weight:500">Maintenance Mode</div><div style="font-size:.75rem;color:var(--text-muted)">Show maintenance page</div></div>
+              <label class="toggle"><input type="checkbox" id="maint-toggle" onchange="toggleMaint(this)"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Account -->
+      <div class="card mb-4">
+        <div class="card-header-custom"><h6><i class="bi bi-person-gear me-2" style="color:var(--accent)"></i>Admin Account</h6></div>
+        <div class="card-body">
+          <div class="form-group"><label class="form-label">Admin Name</label><input type="text" class="form-control" value="Admin"></div>
+          <div class="form-group"><label class="form-label">Admin Email</label><input type="email" class="form-control" value="admin@typeandmatch.com"></div>
+          <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" placeholder="Leave blank to keep current"></div>
+          <button class="btn-outline-custom w-100" style="justify-content:center" onclick="toast('Password updated!')">Update Password</button>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card" style="border-color:rgba(239,68,68,.2)">
+        <div class="card-header-custom"><h6 style="color:var(--danger)"><i class="bi bi-exclamation-triangle-fill me-2"></i>Danger Zone</h6></div>
+        <div class="card-body">
+          <div style="margin-bottom:12px">
+            <div style="font-size:.85rem;font-weight:500;margin-bottom:4px">Clear All Test Data</div>
+            <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px">Remove all mock/test contest and user data</div>
+            <button class="btn-danger-custom" onclick="toast('Test data cleared','danger')"><i class="bi bi-trash"></i>Clear Test Data</button>
+          </div>
+          <div>
+            <div style="font-size:.85rem;font-weight:500;margin-bottom:4px">Platform Reset</div>
+            <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px">Reset all settings to default values</div>
+            <button class="btn-danger-custom" onclick="if(confirm('Reset all settings?'))toast('Settings reset to defaults','danger')"><i class="bi bi-arrow-counterclockwise"></i>Reset Settings</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div></div>
+
+<script src="js/admin.js"></script>
+<script>
+if(!localStorage.getItem('te_admin')) window.location.href='admin-login.html';
+function saveAll(){toast('All settings saved successfully!');}
+function toggleMaint(el){ toast(el.checked?'Maintenance mode ON — users will see maintenance page':'Maintenance mode OFF',el.checked?'warning':'success'); }
+</script>
+</body>
+</html>

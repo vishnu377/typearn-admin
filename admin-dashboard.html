@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div id="topbar-container" data-title="Dashboard" data-sub="Overview"></div>
+
+<div class="main-wrap">
+<div class="page-content">
+
+  <!-- STAT CARDS -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card green">
+        <div class="stat-icon" style="background:rgba(0,192,122,.12)"><i class="bi bi-people-fill" style="color:var(--primary)"></i></div>
+        <div class="stat-num">25,840</div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>+142 this week</div>
+        <div style="position:absolute;top:16px;right:16px;font-size:2rem;opacity:.06"><i class="bi bi-people"></i></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card blue">
+        <div class="stat-icon" style="background:rgba(59,130,246,.12)"><i class="bi bi-trophy-fill" style="color:var(--info)"></i></div>
+        <div class="stat-num">5,284</div>
+        <div class="stat-label">Total Contests</div>
+        <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>+18 this month</div>
+        <div style="position:absolute;top:16px;right:16px;font-size:2rem;opacity:.06"><i class="bi bi-trophy"></i></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card gold">
+        <div class="stat-icon" style="background:rgba(245,158,11,.12)"><i class="bi bi-cash-stack" style="color:var(--gold)"></i></div>
+        <div class="stat-num">₹4.2L</div>
+        <div class="stat-label">Total Entry Collection</div>
+        <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>+₹12,400 today</div>
+        <div style="position:absolute;top:16px;right:16px;font-size:2rem;opacity:.06"><i class="bi bi-cash"></i></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card red">
+        <div class="stat-icon" style="background:rgba(239,68,68,.12)"><i class="bi bi-gift-fill" style="color:var(--danger)"></i></div>
+        <div class="stat-num">₹2.8L</div>
+        <div class="stat-label">Total Prizes Paid</div>
+        <div class="stat-change down"><i class="bi bi-arrow-up-short"></i>+₹8,200 today</div>
+        <div style="position:absolute;top:16px;right:16px;font-size:2rem;opacity:.06"><i class="bi bi-gift"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="row g-3 mb-4">
+    <!-- Live Contests -->
+    <div class="col-lg-5">
+      <div class="card h-100">
+        <div class="card-header-custom">
+          <h6><span class="live-dot"></span>Live Contests</h6>
+          <a href="admin-contests.html" style="color:var(--primary);font-size:.8rem;text-decoration:none">Manage All →</a>
+        </div>
+        <div class="card-body p-0">
+          <div id="live-contests-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="col-lg-7">
+      <div class="card h-100">
+        <div class="card-header-custom">
+          <h6><i class="bi bi-people me-2" style="color:var(--primary)"></i>Recent Registrations</h6>
+          <a href="admin-users.html" style="color:var(--primary);font-size:.8rem;text-decoration:none">View All →</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table-custom" id="recent-users-table"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3 -->
+  <div class="row g-3 mb-4">
+    <!-- Revenue Chart Mock -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header-custom">
+          <h6><i class="bi bi-graph-up me-2" style="color:var(--primary)"></i>Revenue Overview</h6>
+          <div class="d-flex gap-2">
+            <button class="btn-ghost py-1 px-3" style="font-size:.75rem">7 Days</button>
+            <button class="btn-primary-custom py-1 px-3" style="font-size:.75rem">30 Days</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <canvas id="revenueChart" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Payouts -->
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header-custom">
+          <h6><i class="bi bi-clock-history me-2" style="color:var(--gold)"></i>Pending Payouts</h6>
+          <span class="badge-pending" id="pending-count">0</span>
+        </div>
+        <div class="card-body p-0" id="pending-list"></div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border)">
+          <a href="admin-finance.html" class="btn-primary-custom w-100" style="justify-content:center;font-size:.82rem">Review All Payouts</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: Quick Stats -->
+  <div class="row g-3">
+    <div class="col-md-3 col-6">
+      <div class="card" style="padding:18px">
+        <div style="color:var(--text-muted);font-size:.78rem;margin-bottom:6px">Today's Revenue</div>
+        <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-alt);color:var(--primary)">₹12,400</div>
+        <div class="progress-bar-custom mt-2"><div class="progress-fill" style="width:72%"></div></div>
+        <small style="color:var(--text-dim);font-size:.72rem">72% of daily target</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card" style="padding:18px">
+        <div style="color:var(--text-muted);font-size:.78rem;margin-bottom:6px">Active Players Now</div>
+        <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-alt);color:var(--info)">247</div>
+        <div class="progress-bar-custom mt-2"><div class="progress-fill info" style="width:49%"></div></div>
+        <small style="color:var(--text-dim);font-size:.72rem">49% of peak capacity</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card" style="padding:18px">
+        <div style="color:var(--text-muted);font-size:.78rem;margin-bottom:6px">Words Typed Today</div>
+        <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-alt);color:var(--gold)">1.2M</div>
+        <div class="progress-bar-custom mt-2"><div class="progress-fill gold" style="width:85%"></div></div>
+        <small style="color:var(--text-dim);font-size:.72rem">85% of daily record</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card" style="padding:18px">
+        <div style="color:var(--text-muted);font-size:.78rem;margin-bottom:6px">Platform Margin</div>
+        <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-alt);color:var(--success)">33%</div>
+        <div class="progress-bar-custom mt-2"><div class="progress-fill" style="width:33%;background:var(--success)"></div></div>
+        <small style="color:var(--text-dim);font-size:.72rem">Entry - Prizes / Entry</small>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="js/admin.js"></script>
+<script>
+if(!localStorage.getItem('te_admin')) window.location.href='admin-login.html';
+
+// Live Contests
+const lcList = document.getElementById('live-contests-list');
+CONTESTS_DATA.filter(c=>c.status==='live').forEach(c=>{
+  const pct = (c.participants/c.maxP*100).toFixed(0);
+  lcList.innerHTML += `
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <div style="font-weight:600;font-size:.88rem">${c.name}</div>
+          <div style="font-size:.75rem;color:var(--text-muted)">${c.lang} · ${c.duration} min · Entry ₹${c.entry}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="color:var(--gold);font-weight:700;font-family:var(--font-alt)">₹${c.prize}</div>
+          <div style="font-size:.72rem;color:var(--text-dim)">Prize</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div class="progress-bar-custom" style="flex:1"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <small style="color:var(--text-muted);font-size:.72rem;white-space:nowrap">${c.participants}/${c.maxP}</small>
+      </div>
+    </div>`;
+});
+if(!CONTESTS_DATA.filter(c=>c.status==='live').length) lcList.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:.85rem">No live contests right now</div>';
+
+// Recent Users Table
+const rut = document.getElementById('recent-users-table');
+rut.innerHTML = `<thead><tr><th>User</th><th>Email</th><th>Plan</th><th>Joined</th><th>Status</th></tr></thead><tbody>` +
+  USERS_DATA.slice(0,6).map(u=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar" style="background:${avatarColor(u.name)};color:var(--bg-dark)">${initials(u.name)}</div><span style="font-weight:500;font-size:.875rem">${u.name}</span></div></td>
+      <td style="color:var(--text-muted)">${u.email}</td>
+      <td><span style="background:${u.plan==='Pro'?'rgba(124,58,237,.12)':u.plan==='Starter'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${u.plan==='Pro'?'#a78bfa':u.plan==='Starter'?'var(--info)':'var(--text-muted)'};border-radius:6px;padding:2px 8px;font-size:.72rem;font-weight:600">${u.plan}</span></td>
+      <td style="color:var(--text-muted);font-size:.82rem">${formatDate(u.joined)}</td>
+      <td><span class="${u.status==='active'?'badge-active':'badge-banned'}">${u.status}</span></td>
+    </tr>`).join('') + '</tbody>';
+
+// Pending Payouts
+const pl = document.getElementById('pending-list');
+const pending = PAYOUTS_DATA.filter(p=>p.status==='pending');
+document.getElementById('pending-count').textContent = pending.length;
+pending.forEach(p=>{
+  pl.innerHTML += `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:500;font-size:.85rem">${p.userName}</div>
+        <div style="font-size:.72rem;color:var(--text-muted)">${p.type==='withdraw'?'Withdrawal request':'Prize payout'} · ${p.method}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="color:var(--gold);font-weight:700;font-family:var(--font-alt)">₹${p.amount}</div>
+        <div style="font-size:.7rem;color:var(--text-dim)">${formatDate(p.date)}</div>
+      </div>
+    </div>`;
+});
+
+// Revenue Chart
+const ctx = document.getElementById('revenueChart').getContext('2d');
+const labels = ['May 1','May 5','May 10','May 15','May 18','May 20','May 22','May 24','May 26','May 27'];
+new Chart(ctx, {
+  type:'line',
+  data:{
+    labels,
+    datasets:[
+      { label:'Entry Collection', data:[8200,9400,11000,10200,12800,14000,11600,13400,12000,12400], borderColor:'#00C07A', backgroundColor:'rgba(0,192,122,.08)', borderWidth:2, fill:true, tension:.4, pointRadius:3, pointBackgroundColor:'#00C07A' },
+      { label:'Prizes Paid', data:[5400,6200,7300,6800,8500,9400,7700,8900,8000,8200], borderColor:'#F59E0B', backgroundColor:'rgba(245,158,11,.06)', borderWidth:2, fill:true, tension:.4, pointRadius:3, pointBackgroundColor:'#F59E0B' }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:true,
+    plugins:{ legend:{ labels:{ color:'#9CA3AF', font:{family:'Outfit',size:12}, boxWidth:12 } } },
+    scales:{
+      x:{ grid:{ color:'rgba(255,255,255,.04)' }, ticks:{ color:'#6B7280', font:{size:11} } },
+      y:{ grid:{ color:'rgba(255,255,255,.04)' }, ticks:{ color:'#6B7280', font:{size:11}, callback:v=>'₹'+(v/1000).toFixed(0)+'K' } }
+    }
+  }
+});
+</script>
+</body>
+</html>

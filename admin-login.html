@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Login — Type&Earn</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+<style>
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#06080f 0%,#0a0e1a 50%,#071a10 100%);padding:20px}
+.login-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:100%;max-width:400px}
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="width:52px;height:52px;border-radius:14px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--bg-dark);font-size:1.2rem;margin:0 auto 14px">T</div>
+    <div style="font-size:1.5rem;font-weight:800">Tyep&<span style="color:var(--primary)">Earn</span></div>
+    <div style="background:rgba(0,192,122,.1);color:var(--primary);border:1px solid var(--border-green);border-radius:6px;font-size:.68rem;font-weight:700;padding:3px 12px;letter-spacing:1.5px;display:inline-block;margin-top:6px">ADMIN PANEL</div>
+  </div>
+
+  <div class="alert-custom alert-warning mb-4" style="font-size:.8rem">
+    <i class="bi bi-shield-lock-fill"></i>
+    <span>Restricted area. Authorized personnel only.</span>
+  </div>
+
+  <form onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label class="form-label">Admin Email</label>
+      <div style="position:relative">
+        <i class="bi bi-envelope" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-dim)"></i>
+        <input type="email" id="email" class="form-control" style="padding-left:34px" placeholder="admin@typeandmatch.com" value="admin@typeandmatch.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="display:flex;justify-content:space-between"><span>Password</span><a href="#" style="color:var(--primary);font-size:.78rem">Forgot?</a></label>
+      <div style="position:relative">
+        <i class="bi bi-lock" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-dim)"></i>
+        <input type="password" id="pass" class="form-control" style="padding-left:34px" placeholder="••••••••" value="admin123">
+        <i class="bi bi-eye" id="eye" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--text-dim);cursor:pointer" onclick="togglePass()"></i>
+      </div>
+    </div>
+    <button type="submit" class="btn-primary-custom w-100 py-3 mt-2" style="justify-content:center;font-size:.95rem;border-radius:10px">
+      <i class="bi bi-shield-check"></i> Access Admin Panel
+    </button>
+  </form>
+
+  <div style="text-align:center;margin-top:20px;color:var(--text-dim);font-size:.75rem">
+    Demo: any email · password: admin123
+  </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+function togglePass(){
+  const p=document.getElementById('pass'),e=document.getElementById('eye');
+  p.type=p.type==='password'?'text':'password';
+  e.className=p.type==='password'?'bi bi-eye':'bi bi-eye-slash';
+  e.style.cssText='position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--text-dim);cursor:pointer';
+}
+function handleLogin(e){
+  e.preventDefault();
+  const pass=document.getElementById('pass').value;
+  if(pass.length<6){toast('Password too short','danger');return;}
+  localStorage.setItem('te_admin','1');
+  toast('Login successful! Redirecting...');
+  setTimeout(()=>window.location.href='admin-dashboard.html',800);
+}
+if(localStorage.getItem('te_admin')) window.location.href='admin-dashboard.html';
+</script>
+</body>
+</html>

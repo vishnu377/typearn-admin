@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paragraphs — Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div id="topbar-container" data-title="Paragraph Management"></div>
+
+<div class="main-wrap"><div class="page-content">
+
+  <div class="page-header">
+    <div><h4>Paragraphs</h4><p>Manage typing paragraphs used in contests and exam tests</p></div>
+    <button class="btn-primary-custom" onclick="openAddModal()"><i class="bi bi-plus-lg"></i>Add Paragraph</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem">Total Paragraphs</div><div style="font-size:1.4rem;font-weight:800;color:var(--primary);font-family:var(--font-alt)" id="p-total">0</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem">Active</div><div style="font-size:1.4rem;font-weight:800;color:var(--success);font-family:var(--font-alt)" id="p-active">0</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem">English</div><div style="font-size:1.4rem;font-weight:800;color:var(--info);font-family:var(--font-alt)" id="p-en">0</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px"><div style="color:var(--text-muted);font-size:.75rem">Hindi</div><div style="font-size:1.4rem;font-weight:800;color:var(--gold);font-family:var(--font-alt)" id="p-hi">0</div></div></div>
+  </div>
+
+  <!-- Filters + Table -->
+  <div class="card">
+    <div class="card-header-custom flex-wrap gap-3">
+      <h6>All Paragraphs</h6>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="search-bar"><i class="bi bi-search"></i><input type="text" class="form-control" id="p-search" placeholder="Search..." style="width:180px;padding-left:32px!important;font-size:.82rem"></div>
+        <select class="form-select" id="p-lang-filter" style="width:auto;padding:7px 12px;font-size:.82rem"><option value="">All Languages</option><option>English</option><option>Hindi</option></select>
+        <select class="form-select" id="p-diff-filter" style="width:auto;padding:7px 12px;font-size:.82rem"><option value="">All Difficulty</option><option>Easy</option><option>Medium</option><option>Hard</option></select>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table-custom">
+        <thead><tr><th>Title</th><th>Language</th><th>Difficulty</th><th>Words</th><th>Category</th><th>Used in</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="para-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div></div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-custom" id="paraModal">
+  <div class="modal-box" style="max-width:620px">
+    <div class="modal-header"><h5 id="para-modal-title">Add Paragraph</h5><button class="modal-close" onclick="closeModal('paraModal')"><i class="bi bi-x"></i></button></div>
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-12"><div class="form-group"><label class="form-label">Title *</label><input type="text" class="form-control" id="pa-title" placeholder="e.g. Public Libraries 2025"></div></div>
+        <div class="col-6"><div class="form-group"><label class="form-label">Language</label><select class="form-select" id="pa-lang"><option>English</option><option>Hindi</option></select></div></div>
+        <div class="col-6"><div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="pa-diff"><option>Easy</option><option>Medium</option><option>Hard</option></select></div></div>
+        <div class="col-6"><div class="form-group"><label class="form-label">Category</label><select class="form-select" id="pa-cat"><option>General</option><option>Technology</option><option>Health</option><option>Science</option><option>History</option></select></div></div>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+              <label class="toggle"><input type="checkbox" id="pa-active" checked><span class="toggle-slider"></span></label>
+              <span style="color:var(--text-muted);font-size:.85rem">Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="form-group mb-0">
+            <label class="form-label" style="display:flex;justify-content:space-between"><span>Paragraph Text *</span><span id="word-count-live" style="color:var(--primary);font-size:.78rem">0 words</span></label>
+            <textarea class="form-control" id="pa-text" rows="7" placeholder="Type or paste the paragraph text here..." oninput="updateWordCount()"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('paraModal')">Cancel</button>
+      <button class="btn-primary-custom" onclick="saveParagraph()"><i class="bi bi-check-lg"></i>Save Paragraph</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-custom" id="previewModal">
+  <div class="modal-box">
+    <div class="modal-header"><h5 id="preview-title">Preview</h5><button class="modal-close" onclick="closeModal('previewModal')"><i class="bi bi-x"></i></button></div>
+    <div class="modal-body">
+      <div id="preview-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
+      <div id="preview-text" style="background:var(--bg-dark);border-radius:8px;padding:16px;font-family:'Courier New',monospace;font-size:.9rem;line-height:2;color:var(--text-muted)"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+if(!localStorage.getItem('te_admin')) window.location.href='admin-login.html';
+let paragraphs = [...PARAGRAPHS_DATA];
+let editingId = null;
+
+function updateWordCount() {
+  const t = document.getElementById('pa-text').value.trim();
+  const wc = t ? t.split(/\s+/).length : 0;
+  document.getElementById('word-count-live').textContent = wc + ' words';
+}
+
+function renderParas() {
+  const q = document.getElementById('p-search').value.toLowerCase();
+  const lf = document.getElementById('p-lang-filter').value;
+  const df = document.getElementById('p-diff-filter').value;
+  const filtered = paragraphs.filter(p =>
+    (!q || p.title.toLowerCase().includes(q) || p.text.toLowerCase().includes(q)) &&
+    (!lf || p.lang===lf) && (!df || p.difficulty===df)
+  );
+  document.getElementById('p-total').textContent = paragraphs.length;
+  document.getElementById('p-active').textContent = paragraphs.filter(p=>p.active).length;
+  document.getElementById('p-en').textContent = paragraphs.filter(p=>p.lang==='English').length;
+  document.getElementById('p-hi').textContent = paragraphs.filter(p=>p.lang==='Hindi').length;
+
+  const diffColor = {Easy:'var(--success)',Medium:'var(--gold)',Hard:'var(--danger)'};
+  document.getElementById('para-tbody').innerHTML = filtered.map(p=>`
+    <tr>
+      <td style="max-width:200px">
+        <div style="font-weight:600;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.title}</div>
+        <div style="font-size:.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${p.text.substring(0,60)}...</div>
+      </td>
+      <td><span style="background:${p.lang==='English'?'rgba(59,130,246,.12)':'rgba(245,158,11,.12)'};color:${p.lang==='English'?'var(--info)':'var(--gold)'};border-radius:6px;padding:2px 8px;font-size:.72rem;font-weight:600">${p.lang}</span></td>
+      <td><span style="color:${diffColor[p.difficulty]};font-size:.82rem;font-weight:600">${p.difficulty}</span></td>
+      <td style="color:var(--text-muted)">${p.words}</td>
+      <td style="color:var(--text-muted);font-size:.82rem">${p.category}</td>
+      <td style="color:var(--text-muted)">${p.contests} contests</td>
+      <td>
+        <label class="toggle"><input type="checkbox" ${p.active?'checked':''} onchange="toggleActive('${p.id}',this.checked)"><span class="toggle-slider"></span></label>
+      </td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn-sm-icon view" onclick="previewPara('${p.id}')" title="Preview"><i class="bi bi-eye"></i></button>
+          <button class="btn-sm-icon edit" onclick="editPara('${p.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+          <button class="btn-sm-icon delete" onclick="deletePara('${p.id}')" title="Delete"><i class="bi bi-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('para-modal-title').textContent = 'Add Paragraph';
+  document.getElementById('pa-title').value='';
+  document.getElementById('pa-text').value='';
+  document.getElementById('pa-active').checked=true;
+  document.getElementById('word-count-live').textContent='0 words';
+  openModal('paraModal');
+}
+
+function editPara(id) {
+  editingId = id;
+  const p = paragraphs.find(x=>x.id===id);
+  document.getElementById('para-modal-title').textContent = 'Edit Paragraph';
+  document.getElementById('pa-title').value=p.title;
+  document.getElementById('pa-lang').value=p.lang;
+  document.getElementById('pa-diff').value=p.difficulty;
+  document.getElementById('pa-cat').value=p.category;
+  document.getElementById('pa-text').value=p.text;
+  document.getElementById('pa-active').checked=p.active;
+  updateWordCount();
+  openModal('paraModal');
+}
+
+function saveParagraph() {
+  const title = document.getElementById('pa-title').value.trim();
+  const text = document.getElementById('pa-text').value.trim();
+  if(!title||!text){toast('Title and text are required','danger');return;}
+  const words = text.split(/\s+/).length;
+  if(editingId) {
+    const p = paragraphs.find(x=>x.id===editingId);
+    p.title=title; p.lang=document.getElementById('pa-lang').value;
+    p.difficulty=document.getElementById('pa-diff').value;
+    p.category=document.getElementById('pa-cat').value;
+    p.text=text; p.words=words; p.active=document.getElementById('pa-active').checked;
+    toast('Paragraph updated!');
+  } else {
+    paragraphs.unshift({id:'p'+Date.now(),title,lang:document.getElementById('pa-lang').value,difficulty:document.getElementById('pa-diff').value,words,category:document.getElementById('pa-cat').value,contests:0,active:document.getElementById('pa-active').checked,text});
+    toast('Paragraph added!');
+  }
+  closeModal('paraModal'); renderParas();
+}
+
+function deletePara(id) {
+  if(!confirm('Delete this paragraph?')) return;
+  paragraphs=paragraphs.filter(p=>p.id!==id);
+  renderParas(); toast('Paragraph deleted','danger');
+}
+
+function toggleActive(id, val) {
+  paragraphs.find(p=>p.id===id).active=val;
+  renderParas(); toast('Status updated');
+}
+
+function previewPara(id) {
+  const p = paragraphs.find(x=>x.id===id);
+  document.getElementById('preview-title').textContent = p.title;
+  document.getElementById('preview-meta').innerHTML = `
+    <span style="background:rgba(59,130,246,.12);color:var(--info);border-radius:6px;padding:2px 10px;font-size:.72rem;font-weight:600">${p.lang}</span>
+    <span style="background:rgba(0,0,0,.2);color:var(--text-muted);border-radius:6px;padding:2px 10px;font-size:.72rem">${p.difficulty}</span>
+    <span style="background:rgba(0,0,0,.2);color:var(--text-muted);border-radius:6px;padding:2px 10px;font-size:.72rem">${p.words} words</span>`;
+  document.getElementById('preview-text').textContent = p.text;
+  openModal('previewModal');
+}
+
+['p-search'].forEach(id=>document.getElementById(id).addEventListener('input',renderParas));
+['p-lang-filter','p-diff-filter'].forEach(id=>document.getElementById(id).addEventListener('change',renderParas));
+renderParas();
+</script>
+</body>
+</html>

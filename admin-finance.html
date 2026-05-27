@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finance — Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div id="topbar-container" data-title="Finance" data-sub="Revenue & Payouts"></div>
+
+<div class="main-wrap"><div class="page-content">
+
+  <div class="page-header">
+    <div><h4>Finance</h4><p>Track revenue, manage payouts and monitor platform finances</p></div>
+    <button class="btn-ghost"><i class="bi bi-download me-1"></i>Export Report</button>
+  </div>
+
+  <!-- Finance Overview -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card green">
+        <div class="stat-icon" style="background:rgba(0,192,122,.12)"><i class="bi bi-arrow-down-circle-fill" style="color:var(--primary)"></i></div>
+        <div class="stat-num">₹4.2L</div>
+        <div class="stat-label">Total Entry Collection</div>
+        <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>+₹42K this month</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card red">
+        <div class="stat-icon" style="background:rgba(239,68,68,.12)"><i class="bi bi-arrow-up-circle-fill" style="color:var(--danger)"></i></div>
+        <div class="stat-num">₹2.8L</div>
+        <div class="stat-label">Total Prizes Paid</div>
+        <div class="stat-change down"><i class="bi bi-arrow-up-short"></i>+₹28K this month</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card gold">
+        <div class="stat-icon" style="background:rgba(245,158,11,.12)"><i class="bi bi-graph-up-arrow" style="color:var(--gold)"></i></div>
+        <div class="stat-num">₹1.4L</div>
+        <div class="stat-label">Platform Revenue</div>
+        <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>33% margin</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card blue">
+        <div class="stat-icon" style="background:rgba(59,130,246,.12)"><i class="bi bi-clock-history" style="color:var(--info)"></i></div>
+        <div class="stat-num" id="pending-total">₹0</div>
+        <div class="stat-label">Pending Payouts</div>
+        <div class="stat-change" style="color:var(--gold)" id="pending-cnt">0 requests</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-nav" style="max-width:400px;margin-bottom:20px">
+    <button class="tab-btn active" onclick="switchTab('payouts',this)">Payouts / Withdrawals</button>
+    <button class="tab-btn" onclick="switchTab('entries',this)">Entry Collections</button>
+  </div>
+
+  <!-- PAYOUTS TABLE -->
+  <div id="tab-payouts">
+    <div class="card">
+      <div class="card-header-custom flex-wrap gap-3">
+        <h6>Payout Requests</h6>
+        <div style="display:flex;gap:8px">
+          <select class="form-select" id="payout-status-filter" style="width:auto;padding:7px 12px;font-size:.82rem" onchange="renderPayouts()">
+            <option value="">All</option><option value="pending">Pending</option><option value="paid">Paid</option>
+          </select>
+          <button class="btn-primary-custom" onclick="approveAllPending()"><i class="bi bi-check-all"></i>Approve All Pending</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table-custom">
+          <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Contest</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="payout-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRIES TABLE -->
+  <div id="tab-entries" style="display:none">
+    <div class="card">
+      <div class="card-header-custom"><h6>Entry Fee Collections by Contest</h6></div>
+      <div class="table-responsive">
+        <table class="table-custom">
+          <thead><tr><th>Contest</th><th>Status</th><th>Entry Fee</th><th>Participants</th><th>Total Collected</th><th>Prize Pool</th><th>Platform Cut</th></tr></thead>
+          <tbody id="entries-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
+<!-- MANUAL PAYOUT MODAL -->
+<div class="modal-custom" id="manualPayModal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header"><h5>Process Payout</h5><button class="modal-close" onclick="closeModal('manualPayModal')"><i class="bi bi-x"></i></button></div>
+    <div class="modal-body" id="mpay-body"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('manualPayModal')">Cancel</button>
+      <button class="btn-primary-custom" id="mpay-confirm"><i class="bi bi-check-lg"></i>Mark as Paid</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/admin.js"></script>
+<script>
+if(!localStorage.getItem('te_admin')) window.location.href='admin-login.html';
+let payouts = [...PAYOUTS_DATA];
+
+function updatePendingStats() {
+  const pending = payouts.filter(p=>p.status==='pending');
+  document.getElementById('pending-total').textContent = '₹'+pending.reduce((a,p)=>a+p.amount,0).toLocaleString();
+  document.getElementById('pending-cnt').textContent = pending.length + ' requests';
+}
+
+function renderPayouts() {
+  const sf = document.getElementById('payout-status-filter').value;
+  const filtered = payouts.filter(p=>!sf||p.status===sf);
+  document.getElementById('payout-tbody').innerHTML = filtered.map(p=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar" style="background:${avatarColor(p.userName)};color:var(--bg-dark)">${initials(p.userName)}</div><span style="font-weight:500">${p.userName}</span></div></td>
+      <td><span style="background:${p.type==='prize'?'rgba(0,192,122,.1)':'rgba(59,130,246,.1)'};color:${p.type==='prize'?'var(--primary)':'var(--info)'};border-radius:6px;padding:2px 8px;font-size:.72rem;font-weight:600;text-transform:uppercase">${p.type}</span></td>
+      <td style="color:var(--gold);font-weight:700;font-family:var(--font-alt)">₹${p.amount}</td>
+      <td style="color:var(--text-muted);font-size:.82rem"><i class="bi bi-${p.method==='UPI'?'phone':'bank'} me-1"></i>${p.method}</td>
+      <td style="color:var(--text-muted);font-size:.82rem">${p.contestName}</td>
+      <td style="color:var(--text-muted);font-size:.8rem">${formatDate(p.date)}</td>
+      <td><span class="${p.status==='paid'?'badge-paid':'badge-pending'}">${p.status.toUpperCase()}</span></td>
+      <td>
+        ${p.status==='pending'?`
+          <div style="display:flex;gap:4px">
+            <button class="btn-primary-custom py-1 px-2" style="font-size:.72rem" onclick="processPayout('${p.id}')"><i class="bi bi-check-lg"></i> Approve</button>
+            <button class="btn-danger-custom py-1 px-2" style="font-size:.72rem" onclick="rejectPayout('${p.id}')"><i class="bi bi-x-lg"></i></button>
+          </div>` :
+          `<span style="color:var(--text-dim);font-size:.78rem">Processed</span>`
+        }
+      </td>
+    </tr>`).join('');
+  updatePendingStats();
+}
+
+function renderEntries() {
+  document.getElementById('entries-tbody').innerHTML = CONTESTS_DATA.map(c=>{
+    const collected = c.participants * c.entry;
+    const cut = collected - c.prize;
+    return `<tr>
+      <td style="font-weight:600">${c.name}</td>
+      <td><span class="badge-${c.status}">${c.status.toUpperCase()}</span></td>
+      <td style="color:var(--text-muted)">₹${c.entry}</td>
+      <td>${c.participants}</td>
+      <td style="color:var(--primary);font-weight:700;font-family:var(--font-alt)">₹${collected.toLocaleString()}</td>
+      <td style="color:var(--danger);font-weight:600;font-family:var(--font-alt)">₹${c.prize.toLocaleString()}</td>
+      <td style="color:var(--gold);font-weight:600;font-family:var(--font-alt)">₹${cut.toLocaleString()}</td>
+    </tr>`;}).join('');
+}
+
+function processPayout(id) {
+  const p = payouts.find(x=>x.id===id);
+  document.getElementById('mpay-body').innerHTML = `
+    <div style="padding:14px;background:var(--bg-card2);border-radius:10px;margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:4px">${p.userName}</div>
+      <div style="font-size:.85rem;color:var(--text-muted)">${p.type==='withdraw'?'Withdrawal Request':'Prize Payout'} · ${p.method}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-muted)">Amount</span><span style="color:var(--gold);font-weight:800;font-size:1.2rem;font-family:var(--font-alt)">₹${p.amount}</span></div>
+    <div class="alert-custom alert-info mt-3" style="font-size:.82rem"><i class="bi bi-info-circle"></i>Manually transfer ₹${p.amount} to user's ${p.method} and click "Mark as Paid"</div>`;
+  document.getElementById('mpay-confirm').onclick = () => {
+    p.status='paid'; closeModal('manualPayModal'); renderPayouts(); toast('Payout marked as paid!');
+  };
+  openModal('manualPayModal');
+}
+
+function rejectPayout(id) {
+  if(!confirm('Reject this payout request?')) return;
+  payouts = payouts.filter(p=>p.id!==id);
+  renderPayouts(); toast('Payout rejected','danger');
+}
+
+function approveAllPending() {
+  const pending = payouts.filter(p=>p.status==='pending');
+  if(!pending.length){toast('No pending payouts','info');return;}
+  if(!confirm(`Approve all ${pending.length} pending payouts?`)) return;
+  pending.forEach(p=>p.status='paid');
+  renderPayouts(); toast(`${pending.length} payouts approved!`);
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active')});
+  btn.classList.add('active');
+  document.getElementById('tab-payouts').style.display = tab==='payouts'?'block':'none';
+  document.getElementById('tab-entries').style.display = tab==='entries'?'block':'none';
+}
+
+renderPayouts();
+renderEntries();
+</script>
+</body>
+</html>

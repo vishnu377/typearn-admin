@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contests — Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div id="topbar-container" data-title="Contest Management"></div>
+
+<div class="main-wrap"><div class="page-content">
+
+  <div class="page-header">
+    <div>
+      <h4>Contests</h4>
+      <p>Create, manage and monitor all typing contests</p>
+    </div>
+    <button class="btn-primary-custom" onclick="openModal('createModal')"><i class="bi bi-plus-lg"></i>Create Contest</button>
+  </div>
+
+  <!-- Summary Strip -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--primary);font-family:var(--font-alt)" id="cnt-total">0</div><div style="font-size:.75rem;color:var(--text-muted)">Total</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--success);font-family:var(--font-alt)" id="cnt-live">0</div><div style="font-size:.75rem;color:var(--text-muted)">Live Now</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--info);font-family:var(--font-alt)" id="cnt-up">0</div><div style="font-size:.75rem;color:var(--text-muted)">Upcoming</div></div></div>
+    <div class="col-6 col-md-3"><div class="card" style="padding:16px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--gold);font-family:var(--font-alt)" id="cnt-rev">₹0</div><div style="font-size:.75rem;color:var(--text-muted)">Total Revenue</div></div></div>
+  </div>
+
+  <!-- Filter + Table -->
+  <div class="card">
+    <div class="card-header-custom flex-wrap gap-3">
+      <h6>All Contests</h6>
+      <div class="d-flex gap-2 flex-wrap">
+        <div class="search-bar"><i class="bi bi-search"></i><input type="text" class="form-control" id="contest-search" placeholder="Search contests..." style="width:200px;padding-left:32px!important;font-size:.82rem"></div>
+        <select class="form-select" id="status-filter" style="width:auto;padding:7px 12px;font-size:.82rem">
+          <option value="">All Status</option>
+          <option value="live">Live</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table-custom">
+        <thead><tr><th>Contest</th><th>Status</th><th>Prize/Entry</th><th>Duration</th><th>Players</th><th>Revenue</th><th>Actions</th></tr></thead>
+        <tbody id="contests-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div></div>
+
+<!-- CREATE/EDIT MODAL -->
+<div class="modal-custom" id="createModal">
+  <div class="modal-box" style="max-width:580px">
+    <div class="modal-header"><h5 id="modal-title">Create New Contest</h5><button class="modal-close" onclick="closeModal('createModal')"><i class="bi bi-x"></i></button></div>
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="form-group">
+            <label class="form-label">Contest Name *</label>
+            <input type="text" class="form-control" id="c-name" placeholder="e.g. Speed Blitz Championship">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Prize Pool (₹) *</label>
+            <input type="number" class="form-control" id="c-prize" placeholder="500" min="100">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Entry Fee (₹) *</label>
+            <input type="number" class="form-control" id="c-entry" placeholder="20" min="5">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Duration (minutes) *</label>
+            <select class="form-select" id="c-duration">
+              <option value="5">5 Minutes</option>
+              <option value="10" selected>10 Minutes</option>
+              <option value="15">15 Minutes</option>
+              <option value="20">20 Minutes</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Language</label>
+            <select class="form-select" id="c-lang">
+              <option>English</option>
+              <option>Hindi</option>
+              <option>Bilingual</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Max Participants</label>
+            <input type="number" class="form-control" id="c-maxp" placeholder="50" value="50">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input type="datetime-local" class="form-control" id="c-start">
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="form-group mb-0">
+            <label class="form-label">Prize Distribution</label>
+            <div style="background:var(--bg-dark);border-radius:var(--radius-sm);padding:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div style="text-align:center"><div style="font-size:1.2rem">🥇</div><input type="number" class="form-control mt-1" id="p1" value="50" placeholder="%" style="text-align:center"><small style="color:var(--text-dim)">% 1st</small></div>
+              <div style="text-align:center"><div style="font-size:1.2rem">🥈</div><input type="number" class="form-control mt-1" id="p2" value="30" placeholder="%" style="text-align:center"><small style="color:var(--text-dim)">% 2nd</small></div>
+              <div style="text-align:center"><div style="font-size:1.2rem">🥉</div><input type="number" class="form-control mt-1" id="p3" value="20" placeholder="%" style="text-align:center"><small style="color:var(--text-dim)">% 3rd</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('createModal')">Cancel</button>
+      <button class="btn-primary-custom" onclick="saveContest()"><i class="bi bi-check-lg"></i>Save Contest</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW PARTICIPANTS MODAL -->
+<div class="modal-custom" id="participantsModal">
+  <div class="modal-box">
+    <div class="modal-header"><h5 id="pModal-title">Participants</h5><button class="modal-close" onclick="closeModal('participantsModal')"><i class="bi bi-x"></i></button></div>
+    <div class="modal-body" id="pModal-body"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/admin.js"></script>
+<script>
+if(!localStorage.getItem('te_admin')) window.location.href='admin-login.html';
+
+// Init datetime input
+document.getElementById('c-start').value = new Date(Date.now()+3600000).toISOString().slice(0,16);
+
+let contests = [...CONTESTS_DATA];
+
+function renderContests() {
+  const q = document.getElementById('contest-search').value.toLowerCase();
+  const sf = document.getElementById('status-filter').value;
+  const filtered = contests.filter(c =>
+    (!q || c.name.toLowerCase().includes(q)) && (!sf || c.status === sf)
+  );
+  const tbody = document.getElementById('contests-tbody');
+  tbody.innerHTML = filtered.map(c => {
+    const rev = c.participants * c.entry;
+    return `<tr>
+      <td>
+        <div style="font-weight:600;font-size:.875rem">${c.name}</div>
+        <div style="font-size:.72rem;color:var(--text-muted)">${c.lang} · ${formatDateTime(c.startTime)}</div>
+      </td>
+      <td><span class="badge-${c.status}">${c.status==='live'?'<span class="live-dot"></span>':''}${c.status.toUpperCase()}</span></td>
+      <td>
+        <div style="color:var(--gold);font-weight:700;font-size:.88rem">₹${c.prize}</div>
+        <div style="color:var(--text-muted);font-size:.75rem">Entry ₹${c.entry}</div>
+      </td>
+      <td style="color:var(--text-muted)">${c.duration} min</td>
+      <td>
+        <div>${c.participants}/${c.maxP}</div>
+        <div class="progress-bar-custom mt-1" style="width:80px"><div class="progress-fill" style="width:${(c.participants/c.maxP*100).toFixed(0)}%"></div></div>
+      </td>
+      <td style="color:var(--primary);font-weight:600;font-family:var(--font-alt)">₹${rev}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn-sm-icon view" onclick="viewParticipants(${c.id})" title="View Participants"><i class="bi bi-people"></i></button>
+          <button class="btn-sm-icon edit" onclick="editContest(${c.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+          ${c.status!=='live'?`<button class="btn-sm-icon delete" onclick="deleteContest(${c.id})" title="Delete"><i class="bi bi-trash"></i></button>`:''}
+          ${c.status==='upcoming'?`<button class="btn-sm-icon" style="color:var(--success)" onclick="launchContest(${c.id})" title="Launch Now"><i class="bi bi-play-fill"></i></button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  // update counts
+  document.getElementById('cnt-total').textContent = contests.length;
+  document.getElementById('cnt-live').textContent = contests.filter(c=>c.status==='live').length;
+  document.getElementById('cnt-up').textContent = contests.filter(c=>c.status==='upcoming').length;
+  document.getElementById('cnt-rev').textContent = '₹' + contests.reduce((a,c)=>a+c.participants*c.entry,0).toLocaleString();
+}
+
+function saveContest() {
+  const name = document.getElementById('c-name').value.trim();
+  const prize = parseInt(document.getElementById('c-prize').value);
+  const entry = parseInt(document.getElementById('c-entry').value);
+  if (!name || !prize || !entry) { toast('Fill all required fields','danger'); return; }
+  const newC = {
+    id: contests.length+1, name, prize, entry,
+    duration: parseInt(document.getElementById('c-duration').value),
+    lang: document.getElementById('c-lang').value,
+    maxP: parseInt(document.getElementById('c-maxp').value)||50,
+    status:'upcoming', participants:0,
+    startTime: new Date(document.getElementById('c-start').value).getTime()
+  };
+  contests.unshift(newC);
+  closeModal('createModal');
+  renderContests();
+  toast('Contest "'+name+'" created successfully!');
+}
+
+function editContest(id) {
+  const c = contests.find(x=>x.id===id);
+  document.getElementById('modal-title').textContent = 'Edit Contest';
+  document.getElementById('c-name').value = c.name;
+  document.getElementById('c-prize').value = c.prize;
+  document.getElementById('c-entry').value = c.entry;
+  document.getElementById('c-duration').value = c.duration;
+  openModal('createModal');
+}
+
+function deleteContest(id) {
+  if(!confirm('Delete this contest? This cannot be undone.')) return;
+  contests = contests.filter(c=>c.id!==id);
+  renderContests();
+  toast('Contest deleted','danger');
+}
+
+function launchContest(id) {
+  const c = contests.find(x=>x.id===id);
+  c.status = 'live'; c.startTime = Date.now();
+  renderContests();
+  toast('Contest "'+c.name+'" launched!');
+}
+
+function viewParticipants(id) {
+  const c = contests.find(x=>x.id===id);
+  const fakeNames = ['Arjun Verma','Simran Kaur','Rohan Mehta','Priya Singh','Neha Sharma','Amit Kumar','Divya Patel','Rahul Gupta'];
+  document.getElementById('pModal-title').textContent = c.name + ' — Participants';
+  const body = document.getElementById('pModal-body');
+  body.innerHTML = `<div style="margin-bottom:14px;display:flex;justify-content:space-between"><span style="color:var(--text-muted);font-size:.85rem">${c.participants} joined / ${c.maxP} max</span><span class="badge-${c.status}">${c.status.toUpperCase()}</span></div>` +
+    fakeNames.slice(0,Math.min(c.participants,8)).map((n,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+        <div class="avatar" style="background:${avatarColor(n)};color:var(--bg-dark)">${initials(n)}</div>
+        <div style="flex:1"><div style="font-size:.875rem;font-weight:500">${n}</div></div>
+        <button class="btn-danger-custom py-1 px-2" style="font-size:.72rem" onclick="toast('${n} disqualified','danger')"><i class="bi bi-slash-circle"></i> Disqualify</button>
+      </div>`).join('');
+  if(c.participants>8) body.innerHTML += `<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:.82rem">+${c.participants-8} more participants</div>`;
+  openModal('participantsModal');
+}
+
+document.getElementById('contest-search').addEventListener('input', renderContests);
+document.getElementById('status-filter').addEventListener('change', renderContests);
+renderContests();
+</script>
+</body>
+</html>
